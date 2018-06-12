@@ -1,0 +1,12 @@
+
+====== SSV-Coverage.py 0.1.0 ======
+
+2018-06-07 14:09:32
+
+=== Configuration File Name ===
+	conf.txt
+
+=== Created Files ===
+	./sample1.bam.bai
+	./sample1.bed
+	out.svg
