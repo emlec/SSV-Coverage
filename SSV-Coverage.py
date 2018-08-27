@@ -140,15 +140,15 @@ class Main(object):
                     self.dict["line_width"].append(1)
                 else:
                     self.dict["line_width"].append(self.config.get(bam_num, "line_width"))
-            
+
+            self.scale = self.config.get("Graph", "scale")
             if not self.config.get("Graph", "scale"):
                 self.scale = "linear"
-            else:
-                self.scale = self.config.get("Graph", "scale")
-                if self.scale != "linear" or "log":
-                    print ("The 'scale' option of the configuration file is not in the correct format")
-                    print ("Please report to the descriptions in the configuration file\n")
-                    exit()
+
+            if self.scale != "linear" or "log":
+                print ("The 'scale' option of the configuration file is not in the correct format")
+                print ("Please report to the descriptions in the configuration file\n")
+                exit()
             
             self.xlabel = self.config.get("Graph", "xlabel")
             if not self.xlabel:
