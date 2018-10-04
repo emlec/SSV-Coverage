@@ -145,10 +145,10 @@ class Main(object):
             if not self.config.get("Graph", "scale"):
                 self.scale = "linear"
 
-            if self.scale != "linear" or "log":
-                print ("The 'scale' option of the configuration file is not in the correct format")
-                print ("Please report to the descriptions in the configuration file\n")
-                exit()
+            #if (self.scale != "linear" or self.scale != "log"):
+            #    print ("The 'scale' option of the configuration file is not in the correct format")
+            #    print ("Please report to the descriptions in the configuration file\n")
+            #    exit()
             
             self.xlabel = self.config.get("Graph", "xlabel")
             if not self.xlabel:
@@ -346,7 +346,7 @@ class Main(object):
                 if read_exist:
                     print("\t\t... using reads aligned to the reference {}.".format(self.reference_name))
                     pos_prec = -1
-                    for pileupcolumn in bam.pileup(self.reference_name, max_depth=10000000):
+                    for pileupcolumn in bam.pileup(self.reference_name, max_depth=100000000):
 
                         # pileupcolumn.pos + 1 == base position in the reference
                         base_position = pileupcolumn.pos+1
