@@ -21,7 +21,7 @@ try:
     matplotlib.use('svg')  # Mandatory for the hardcopy backend
     import matplotlib.pyplot as plt  # Mandatory package
     from os import path, listdir  # Mandatory package
-    from time import time
+    import time
     from datetime import datetime
     import configparser  # Mandatory package
     import pysam  # Mandatory package
@@ -37,9 +37,9 @@ except ImportError as E:
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-class Main(object):
+class Main:
     """
-    Create a graphic representing the coverage of sequencing from bam files.
+    Create a graphic representing the coverage of sequencing along a reference from bam files.
     """
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
@@ -63,7 +63,7 @@ class Main(object):
         parser.add_argument('-i', dest='bam_number', type=int,
                             help="Generate an empty configuration file adapted to the \
                             number of bam files to create coverage graph and exit. [Mandatory]")
-        parser.add_argument('-c', dest="conf_file",
+        parser.add_argument('-c', dest='conf_file',
                             help="Path to the configuration file [Mandatory]")
 
         # Parse arguments
@@ -80,9 +80,10 @@ class Main(object):
 
     def __init__(self, bam_number=None, conf_file=None):
 
-        self.start_time = time()
+        # Returns the time as a floating point number expressed in seconds
+        self.start_time = time.time()
 
-        # Create a empty configuration file if needed with the number of bam files necessary
+        # Create an empty configuration file if needed with the number of bam files necessary
         if bam_number:
             print(f"Create an empty configuration file, appropriate for {bam_number} bam files, in the current folder.")
             write_conf_file(bam_number)
@@ -144,10 +145,11 @@ class Main(object):
             if not self.config.get("Graph", "scale"):
                 self.scale = "linear"
 
-            # if (self.scale != "linear" or self.scale != "log"):
-            #    print ("The 'scale' option of the configuration file is not in the correct format")
-            #    print ("Please report to the descriptions in the configuration file\n")
-            #    exit()
+            if self.scale != "linear":
+                if self.scale != "log":
+                    print("The 'scale' option of the configuration file is not in the correct format")
+                    print("Please report to the descriptions in the configuration file\n")
+                    exit()
 
             self.xlabel = self.config.get("Graph", "xlabel")
             if not self.xlabel:
@@ -293,7 +295,7 @@ class Main(object):
         # Make the graph
         self.coverage()
 
-        self.total_time = round(time() - self.start_time, 1)
+        self.total_time = round(time.time() - self.start_time, 1)
         self.make_report()
 
         print("\n\n====== DONE ======")
