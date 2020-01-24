@@ -15,7 +15,7 @@
 try:
     # Standard library imports
     import sys
-    import optparse  # Mandatory package
+    import argparse  # Mandatory package
     import matplotlib  # Mandatory package
 
     matplotlib.use('svg')  # Mandatory for the hardcopy backend
@@ -57,14 +57,17 @@ class Main(object):
         """
 
         # Define parser usage, options
-        parser = optparse.OptionParser(usage=self.USAGE, version=self.VERSION)
-        parser.add_option('-i', dest="bam_number", type="int",
-                          help="Generate an empty configuration file adapted to the number of bam files to create coverage graph and exit. [Mandatory]")
-        parser.add_option('-c', dest="conf_file",
-                          help="Path to the configuration file [Mandatory]")
+        parser = argparse.ArgumentParser(description='Coverage graph creator from BAM files.', usage=self.USAGE)
+        parser.add_argument('--version', action='version', version=self.VERSION,
+                            help="show program's version number and exit")
+        parser.add_argument('-i', dest='bam_number', type=int,
+                            help="Generate an empty configuration file adapted to the \
+                            number of bam files to create coverage graph and exit. [Mandatory]")
+        parser.add_argument('-c', dest="conf_file",
+                            help="Path to the configuration file [Mandatory]")
 
         # Parse arguments
-        options, args = parser.parse_args()
+        options = parser.parse_args()
 
         # If the program is run without option, show the help and exit
         if len(sys.argv[1:]) == 0:
