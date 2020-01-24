@@ -84,12 +84,7 @@ class Main(object):
 
         # Create a empty configuration file if needed with the number of bam files necessary
         if bam_number:
-            if bam_number > 1:
-                print("Create an empty configuration file, appropriate for {} bam files, in the current folder.".format(
-                    bam_number))
-            else:
-                print("Create an empty configuration file, appropriate for {} bam file, in the current folder.".format(
-                    bam_number))
+            print(f"Create an empty configuration file, appropriate for {bam_number} bam files, in the current folder.")
             write_conf_file(bam_number)
             exit()
 
@@ -289,8 +284,7 @@ class Main(object):
         self.y_max = max(self.dict["y_max_list"])
         # Create a title for the graph if is not given
         if not self.title_write:
-            self.title = "Coverage along the reference {}".format(self.reference_name)
-
+            self.title = f"Coverage along the reference {self.reference_name}"
         # If a max position is not parse, determine the max position for the x axis of the graph
         if not self.max_position_write:
             self.max_position = max(self.dict["x_max_list"])
@@ -303,7 +297,7 @@ class Main(object):
         self.make_report()
 
         print("\n\n====== DONE ======")
-        print("\tTotal execution: {}s".format(self.total_time))
+        print(f"\tTotal execution: {self.total_time}s")
 
         # ~~~~~~~PUBLIC METHODS~~~~~~~#
 
@@ -348,7 +342,7 @@ class Main(object):
 
                 # Make a bed file using only the reads aligned to a specific reference
                 if read_exist:
-                    print("\t\t... using reads aligned to the reference {}.".format(self.reference_name))
+                    print(f"\t\t... using reads aligned to the reference {self.reference_name}.")
                     pos_prec = -1
                     for pileupcolumn in bam.pileup(self.reference_name, max_depth=100000000):
 
@@ -359,17 +353,16 @@ class Main(object):
                         if pileupcolumn.pos != pos_prec + 1:
                             # Note: i is a 0-based coordinate
                             for i in range(pos_prec + 1, pileupcolumn.pos):
-                                bed_file.write("{}\t{}\t{}\t{}\n".format(self.reference_name, i, i + 1, 0))
+                                bed_file.write(f"{self.reference_name}\t{i}\t{i + 1}\t{0}\n")
 
                         # Then, write the current position
-                        bed_file.write("{}\t{}\t{}\t{}\n".format(self.reference_name, base_position - 1, base_position,
-                                                                 pileupcolumn.n))
+                        bed_file.write("{self.reference_name}\t{base_position - 1}\t{base_position}\t{pileupcolumn.n}\n")
                         pos_prec = pileupcolumn.pos
 
                     # Write the last entries for the sequence if needed
                     if pos_prec + 1 < self.reference_length:
                         for i in range(pos_prec + 1, self.reference_length - 1):
-                            bed_file.write("{}\t{}\t{}\t{}\n".format(self.reference_name, i, i + 1, 0))
+                            bed_file.write("{self.reference_name}\t{i}\t{i + 1}\t{0}\n")
 
     def number_reads(self, bam_path):
         """
@@ -489,7 +482,7 @@ class Main(object):
         plt.title(self.title)
 
         plt.legend()
-        print("\t\tCreate the '{}.svg' file...".format(self.output_name))
+        print(f"\t\tCreate the '{self.output_name}.svg' file...")
 
         # Save the graph in SVG file (always)
         plt.savefig(self.output_name + ".svg", dpi=200)
@@ -498,7 +491,7 @@ class Main(object):
         # If a supplementary out is choose
         if self.supplementary_output:
             supplementary_output_name = self.supplementary_output_prefix + "." + self.supplementary_output_format
-            print("\t\tCreate the '{}' file...".format(supplementary_output_name))
+            print(f"\t\tCreate the '{supplementary_output_name}' file...")
             self.created_files.append(supplementary_output_name)
             plt.savefig(supplementary_output_name)
 
@@ -508,16 +501,16 @@ class Main(object):
         """
         name = "report.txt"
         with open(name, 'w') as report_file:
-            report_file.write("\n====== {} ======\n".format(self.VERSION))
-            report_file.write("\n{}\n".format(datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+            report_file.write(f"\n====== {self.VERSION} ======\n")
+            report_file.write("\n{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
 
             # Configuration file name
             report_file.write("\n=== Configuration File Name ===\n")
-            report_file.write("\t{}\n".format(self.conf_file))
+            report_file.write(f"\t{self.conf_file}\n")
             # Created files
             report_file.write("\n=== Created Files ===\n")
             for file in self.created_files:
-                report_file.write("\t{}\n".format(file))
+                report_file.write(f"\t{file}\n")
 
             # Packages versions
             # report_file.write("\n=== Packages versions ===\n")
