@@ -112,7 +112,9 @@ class Main:
             "x_list": list(),
             "y_list": list(),
             "x_max_list": list(),
-            "y_max_list": list()}
+            "y_max_list": list()
+        }
+
         self.title_write = True
         self.max_position_write = True
         self.reference_name = ""
@@ -168,6 +170,11 @@ class Main:
                 self.length = 8
             else:
                 self.length = int(self.config.get("Graph", "length"))
+
+            if not self.config.get("Graph", "depth_normalization"):
+                self.depth_normalization = True
+            else:
+                self.depth_normalization = self.config.get("Graph", "depth_normalization")
 
             self.scale = self.config.get("Graph", "scale")
             if not self.config.get("Graph", "scale"):
@@ -261,6 +268,7 @@ class Main:
             print("Please report to the descriptions in the configuration file\n")
             exit()
 
+        # Workflow
         for i in range(0, 10):
             # Try if the bam_path exist in the configuration file
             try:
@@ -290,11 +298,12 @@ class Main:
 
                 print("\n\t=== READING ===")
                 self.x_list = self.read(depth_file)
-                # Recover the total number of reads
-                reads = self.number_reads(path.splitext(self.dict["bam_path"][i])[0])
+                # Count the total number of sequenced bases
+                all_bases = self.all_bases(path.splitext(self.dict["bam_path"][i])[0])
 
-                print("\n\t=== NORMALIZATION ===")
-                self.dict["y_list"][i] = self.normalize(self.dict["y_list"][i], reads)
+                if self.depth_normalization == "True":
+                    print("\n\t=== NORMALIZATION ===")
+                    self.dict["y_list"][i] = self.normalize(self.dict["y_list"][i], all_bases)
 
         # Determine the y max for the x axis of the graph
         self.y_max = max(self.dict["y_max_list"])
@@ -308,7 +317,6 @@ class Main:
         print("\n\t=== CREATION OF THE GRAPH ===")
         # Make the graph
         self.coverage()
-
         self.total_time = round(time.time() - self.start_time, 1)
         self.make_report()
 
@@ -380,7 +388,7 @@ class Main:
                     if read_exist:
                         print(f"\t\t... and reads aligned to the reference {self.reference_name}.")
                         pos_prec = -1
-                        for pileupcolumn in bam.pileup(self.reference_name):
+                        for pileupcolumn in bam.pileup(self.reference_name, stepper='nofilter'):
 
                             # pileupcolumn.pos + 1 == base position in the reference
                             # pysam: 0-based coordinate, bam file 1-based coordinate)
@@ -402,15 +410,14 @@ class Main:
                             for i in range(pos_prec + 1, self.reference_length - 1):
                                 depth_file.write("{self.reference_name}\t{i}\t{i + 1}\t{0}\n")
 
-    def number_reads(self, bam_path):
+    def all_bases(self, bam_path):
         """
         Determine the number of reads for a sample.
         """
-        reads = 0
+        all_bases = 0
         y_list = list()
         # with bam_path as depth:
         with open(bam_path + ".depth", "r") as depth:
-
             for line in depth:
                 y = line.split()[3]
                 y_list.append(y)
@@ -419,13 +426,13 @@ class Main:
             y_list = list(map(int, y_list))
 
             for i in y_list:
-                reads += i
+                all_bases += i
 
-            return reads
+            return all_bases
 
     def read(self, file_name):
         """
-        Read bam file done in argument and return lists of positions and coverages.
+        Read bam file done in argument and return the lists of positions and coverages.
         """
         x_list = list()
         y_list = list()
@@ -434,7 +441,7 @@ class Main:
         if self.max_position_write:
             line_list = file_name.readlines()
 
-            # Add -1 at because list start at O and depth file start at 1
+            # Add -1 because list start at O and depth file start at 1
             # No -1 for max_position because range do not include the stop
             for i in range(self.min_position - 1, self.max_position):
                 # Recovery of the position
@@ -464,21 +471,21 @@ class Main:
         # Add x and y list to the global dictionnary
         self.dict["x_list"].append(x_list)
         self.dict["y_list"].append(y_list)
+        self.dict["y_max_list"].append(max(y_list))
 
-    def normalize(self, depth_list, reads):
+    def normalize(self, depth_list, all_bases):
         """
         Normalization of the depth by division by the total number of sequenced nucleotides.
         """
 
         # At each position, the depth is divided by the total number of sequenced nucleotides.
-        depth_list[:] = [x / reads for x in depth_list]
+        depth_list[:] = [base_number / all_bases for base_number in depth_list]
         self.dict["y_max_list"].append(max(depth_list))
-
         return depth_list
 
     def coverage(self):
         """
-        Construction of the coverage graph.
+        Creation of the graphic of coverage.
         """
         plt.figure(figsize=(self.length, self.width))
 

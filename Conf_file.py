@@ -130,6 +130,11 @@ width :
 #   Length of the graphic window. If leaved blank, '8' will be used by default. (String)
 length : 
 
+#   Representation of the sequencing coverage after normalization by the total number of sequenced bases.
+#   Write 'True' if normalization is required, otherwise 'False'. 
+#   If leaved blank, the sequencing coverage will be normalized by default. (Boolean)
+depth_normalization: 
+
 #   Scale of the graphic. Scale can be 'log' or 'linear'. 
 #   If leaved blank, 'linear' will be used by default. (String)
 scale : 
@@ -139,6 +144,7 @@ xlabel :
 
 #   y-axis name. If leaved blank, 'Normalized coverage of sequencing per base' will be used by default. (String)
 ylabel :
+
 
 
 [Zoom]
