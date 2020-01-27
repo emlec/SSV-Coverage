@@ -17,7 +17,7 @@ Only a part of the sequence can be represented in the graph.
 ## Dependencies
 
 The following dependencie is required for proper program execution:
-* matplotlib 
+* matplotlib
 
 ## Get SSV-Coverage
 

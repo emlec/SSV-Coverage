@@ -15,8 +15,10 @@
 try:
     # Standard library imports
     import sys
+    import os
     import argparse  # Mandatory package
     import matplotlib  # Mandatory package
+    import subprocess  # Required if depth file created using bedtools genomecov
 
     matplotlib.use('svg')  # Mandatory for the hardcopy backend
     import matplotlib.pyplot as plt  # Mandatory package
@@ -79,6 +81,9 @@ class Main:
     # ~~~~~~~FONDAMENTAL METHODS~~~~~~~#
 
     def __init__(self, bam_number=None, conf_file=None):
+        """
+        Parse the configuration file.
+        """
 
         # Returns the time as a floating point number expressed in seconds
         self.start_time = time.time()
@@ -103,6 +108,7 @@ class Main:
             "bam_path": list(),
             "line_color": list(),
             "line_width": list(),
+            "depth_program": "",
             "x_list": list(),
             "y_list": list(),
             "x_max_list": list(),
@@ -114,11 +120,12 @@ class Main:
         self.created_files = list()
 
         try:
-
+            # Parse [Ref] section
             self.reference_path = self.config.get("Ref", "ref_path")
             if self.reference_path:
                 self.reference()
 
+            # Parse [Bam] section
             for i in range(1, 10):
                 bam_num = "Bam" + str(i)
                 # If there are no more bam files, stop the data recovery
@@ -129,17 +136,38 @@ class Main:
 
                 self.dict["bam_path"].append(self.config.get(bam_num, "bam_path"))
 
-                # If line color is not indicate, black is used
+                # If line color is not indicated, black is used
                 if not self.config.get(bam_num, "line_color"):
                     self.dict["line_color"].append("black")
                 else:
                     self.dict["line_color"].append(self.config.get(bam_num, "line_color"))
 
-                # If line width is not indicate, 1 is used
+                # If line width is not indicated, 1 is used
                 if not self.config.get(bam_num, "line_width"):
                     self.dict["line_width"].append(1)
                 else:
                     self.dict["line_width"].append(self.config.get(bam_num, "line_width"))
+
+            # Parse [depth] section
+            self.depth_program = self.config.get("Depth", "depth_program")
+            if not self.depth_program:
+                self.depth_program = "bedtools"
+
+            # Parse [Graph] section
+            if not self.config.get("Graph", "title"):
+                self.title_write = False
+            else:
+                self.title = self.config.get("Graph", "title")
+
+            if not self.config.get("Graph", "width"):
+                self.width = 6
+            else:
+                self.width = int(self.config.get("Graph", "width"))
+
+            if not self.config.get("Graph", "length"):
+                self.length = 8
+            else:
+                self.length = int(self.config.get("Graph", "length"))
 
             self.scale = self.config.get("Graph", "scale")
             if not self.config.get("Graph", "scale"):
@@ -160,36 +188,18 @@ class Main:
             else:
                 self.ylabel = self.config.get("Graph", "ylabel")
 
-            if not self.config.get("Graph", "title"):
-                self.title_write = False
-            else:
-                self.title = self.config.get("Graph", "title")
+            # Parse [Zoom] section
 
-            if not self.config.get("Graph", "length"):
-                self.length = 8
-            else:
-                self.length = int(self.config.get("Graph", "length"))
-
-            if not self.config.get("Graph", "width"):
-                self.width = 6
-            else:
-                self.width = int(self.config.get("Graph", "width"))
-
-            if not self.config.get("Output", "output_name"):
-                self.output_name = "out"
-            else:
-                self.output_name = self.config.get("Output", "output_name")
-
-            #   If zoom is flag
+            #   If zoom is required
             if self.config.getboolean("Zoom", "zoom"):
 
-                # Test if the min position if superior to max position
+                # If the min position is superior to the max position
                 if int(self.config.get("Zoom", "min_position")) > int(self.config.get("Zoom", "max_position")):
                     print("One of the value in the 'Zoom' section of the configuration file is not correct")
                     print("Please report to the descriptions in the configuration file\n")
                     exit()
 
-                # If the min position is inferior to 1, means is inferior to the first position (1)
+                # If the min position is inferior to 1
                 if int(self.config.get("Zoom", "min_position")) < 1:
                     print("One of the value in the 'Zoom' section of the configuration file is not correct")
                     print("Please report to the descriptions in the configuration file\n")
@@ -197,7 +207,7 @@ class Main:
                 else:
                     self.min_position = int(self.config.get("Zoom", "min_position"))
 
-                # If the max position is superior to the length reference (maximum of possible position)
+                # If the max position is superior to the length reference
                 if int(self.config.get("Zoom", "max_position")) > self.reference_length:
                     print("One of the value in the 'Zoom' section of the configuration file is not correct")
                     print("Please report to the descriptions in the configuration file\n")
@@ -210,7 +220,14 @@ class Main:
                 # Indicate that the zoom is not given
                 self.max_position_write = False
 
-            # If supplementary output is flag
+            # Parse [Output] section
+
+            if not self.config.get("Output", "output_name"):
+                self.output_name = "out"
+            else:
+                self.output_name = self.config.get("Output", "output_name")
+
+            # If supplementary output file is required
             if self.config.getboolean("SupplementaryOutput", "supplementary_output"):
                 self.supplementary_output = True
 
@@ -219,7 +236,6 @@ class Main:
                 else:
                     self.supplementary_output_prefix = self.config.get("SupplementaryOutput",
                                                                        "supplementary_output_prefix")
-
                 self.supplementary_output_format = self.config.get("SupplementaryOutput", "supplementary_output_format")
                 if self.supplementary_output_format not in ('png', 'pdf', 'tif', 'ps', 'eps'):
                     print(
@@ -254,28 +270,26 @@ class Main:
                 break
             # If exist, execute
             else:
-
-                print("\n\n====== SAMPLE {} ======\n".format(self.dict["sample_name"][i]))
+                print(f"\n\n====== SAMPLE {self.dict['sample_name'][i]} ======\n")
                 # Recovery of the current directory
                 directory = path.dirname(self.dict["bam_path"][i])
                 if directory == "":
                     directory = "./"
-                list_dir = list()
-                # Recovery of the list of files in the current directory
+                # List containing the names of the files in the directory.
                 list_dir = listdir(directory)
 
-                # Recovery of the base name of the bam path and substitute the extension by '.depth'
-                bed_name = path.basename(path.splitext(self.dict["bam_path"][i])[0] + ".bed")
+                # depth file naming from bam file name
+                depth_name = path.basename(path.splitext(self.dict["bam_path"][i])[0] + ".depth")
 
-                # If depth file does not exist, it will be create
-                if not bed_name in list_dir:
-                    print("\n\t=== MAKE BED FILE ===")
-                    self.make_bed(self.dict["bam_path"][i])
+                # If depth file doesn't exist, it will be created
+                if not depth_name in list_dir:
+                    print("\n\t=== MAKE DETPH FILE ===")
+                    self.make_depth(self.dict["bam_path"][i])
 
-                bed_file = open(path.splitext(self.dict["bam_path"][i])[0] + ".bed", "r")
+                depth_file = open(path.splitext(self.dict["bam_path"][i])[0] + ".depth", "r")
 
                 print("\n\t=== READING ===")
-                self.x_list = self.read(bed_file)
+                self.x_list = self.read(depth_file)
                 # Recover the total number of reads
                 reads = self.number_reads(path.splitext(self.dict["bam_path"][i])[0])
 
@@ -312,9 +326,9 @@ class Main:
                 self.reference_name = ref.id
                 self.reference_length = len(ref.seq)
 
-    def make_bed(self, bam_path):
+    def make_depth(self, bam_path):
         """"
-        Make a bed file from bam path in argument.
+        Make a depth file from bam path passed as argument.
         """
 
         with pysam.AlignmentFile(bam_path, "rb") as bam:
@@ -327,14 +341,34 @@ class Main:
                 bai = bam_path + ".bai"
                 self.created_files.append(bai)
 
-        with pysam.AlignmentFile(bam_path, "rb") as bam:
-            print("\t\tCreate a bed file...")
-            bed_name = path.splitext(bam_path)[0] + ".bed"
-            # Create a bed file with the same name of the bam file
-            with open(bed_name, "w+") as bed_file:
+        print(f"\t\tCreate a depth file using {self.depth_program} ...")
+        # Create a depth file with the same name of the bam file
+        depth_name = path.splitext(bam_path)[0] + ".depth"
+        self.created_files.append(depth_name)
 
-                self.created_files.append(bed_name)
-                for seq_dictionnary in bam.header['SQ']:
+        # Depth file creation using either bedtools or pysam
+        # Depth file creation using bedtools
+        if self.depth_program == "bedtools":
+            # Report the depth at each genome position with 1-based coordinates.
+            with open('depth_temp.txt', 'a') as depth_temp_file:
+                subprocess.run(["bedtools", "genomecov", "-d", "-ibam", bam_path], stdout=depth_temp_file, check=True)
+            # Add a fourth column at place 2 containing position-1
+            with open('depth_temp.txt', 'r') as depth_temp_file:
+                current_position = 0
+                for line in depth_temp_file:
+                    columns = line.split("\t")
+                    if current_position < self.reference_length:
+                        columns.insert(1, str(current_position))
+                        current_position = current_position + 1
+                        with open(depth_name, "a") as depth_file:
+                            depth_file.write("\t".join(columns))
+            os.remove('depth_temp.txt')
+
+        # depth file creation using pysam
+        elif self.depth_program == "pysam":
+            with pysam.AlignmentFile(bam_path, "rb") as bam:
+                with open(depth_name, "w+") as depth_file:
+                    # for seq_dictionnary in bam.header['SQ']:
                     read_exist = False
                     # Mandatory : The file must contain only alignments against one reference
                     for read in bam.fetch(reference=self.reference_name):
@@ -342,40 +376,42 @@ class Main:
                             read_exist = True
                             break
 
-                # Make a bed file using only the reads aligned to a specific reference
-                if read_exist:
-                    print(f"\t\t... using reads aligned to the reference {self.reference_name}.")
-                    pos_prec = -1
-                    for pileupcolumn in bam.pileup(self.reference_name, max_depth=100000000):
+                    # Make a depth file using only the reads aligned to a specific reference
+                    if read_exist:
+                        print(f"\t\t... and reads aligned to the reference {self.reference_name}.")
+                        pos_prec = -1
+                        for pileupcolumn in bam.pileup(self.reference_name):
 
-                        # pileupcolumn.pos + 1 == base position in the reference
-                        base_position = pileupcolumn.pos + 1
+                            # pileupcolumn.pos + 1 == base position in the reference
+                            # pysam: 0-based coordinate, bam file 1-based coordinate)
+                            base_position = pileupcolumn.pos + 1
 
-                        # Write the missing positions since pileup do not report uncovered regions
-                        if pileupcolumn.pos != pos_prec + 1:
-                            # Note: i is a 0-based coordinate
-                            for i in range(pos_prec + 1, pileupcolumn.pos):
-                                bed_file.write(f"{self.reference_name}\t{i}\t{i + 1}\t{0}\n")
+                            # Write the missing positions since pileup do not report uncovered regions
+                            if pileupcolumn.pos != pos_prec + 1:
+                                # Note: i is a 0-based coordinate
+                                for i in range(pos_prec + 1, pileupcolumn.pos):
+                                    depth_file.write(f"{self.reference_name}\t{i}\t{i + 1}\t{0}\n")
 
-                        # Then, write the current position
-                        bed_file.write("{self.reference_name}\t{base_position - 1}\t{base_position}\t{pileupcolumn.n}\n")
-                        pos_prec = pileupcolumn.pos
+                            # Then, write the current position
+                            depth_file.write(
+                                f"{self.reference_name}\t{base_position - 1}\t{base_position}\t{pileupcolumn.n}\n")
+                            pos_prec = pileupcolumn.pos
 
-                    # Write the last entries for the sequence if needed
-                    if pos_prec + 1 < self.reference_length:
-                        for i in range(pos_prec + 1, self.reference_length - 1):
-                            bed_file.write("{self.reference_name}\t{i}\t{i + 1}\t{0}\n")
+                        # Write the last entries for the sequence if needed
+                        if pos_prec + 1 < self.reference_length:
+                            for i in range(pos_prec + 1, self.reference_length - 1):
+                                depth_file.write("{self.reference_name}\t{i}\t{i + 1}\t{0}\n")
 
     def number_reads(self, bam_path):
         """
-        Determine the number of the reads for a sample.
+        Determine the number of reads for a sample.
         """
         reads = 0
         y_list = list()
-        # with bam_path as bed:
-        with open(bam_path + ".bed", "r") as bed:
+        # with bam_path as depth:
+        with open(bam_path + ".depth", "r") as depth:
 
-            for line in bed:
+            for line in depth:
                 y = line.split()[3]
                 y_list.append(y)
 
@@ -398,7 +434,7 @@ class Main:
         if self.max_position_write:
             line_list = file_name.readlines()
 
-            # Add -1 at because list start at O and bed file start at 1
+            # Add -1 at because list start at O and depth file start at 1
             # No -1 for max_position because range do not include the stop
             for i in range(self.min_position - 1, self.max_position):
                 # Recovery of the position
