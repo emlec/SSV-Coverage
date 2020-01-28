@@ -71,6 +71,7 @@ line_width:\n\n""".format(str(counter + 1))
 [Ref]
 
 #   Path to the reference fasta file that can contain multiple sequences. (String)
+#   Fasta file must be in fa.gz format.
 ref_path : 
 
 

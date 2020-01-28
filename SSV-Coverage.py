@@ -5,10 +5,14 @@
 @package    SSV-Coverage
 @brief      Main file of the program
 @copyright  [GNU General Public License v2](http://www.gnu.org/licenses/gpl-2.0.html)
+@creation of the first version:
 @author     Mathieu Bolteau - 2018
 * <mathieu.bolteau1@gmail.com>
-* <mathieu.bolteau@univ-nantes.fr>
 * [Github] (https://github.com/mablt)
+@new developments
+@author     Emilie Lecomte
+* <emilie.lecomte@univ-nantes.fr>
+* [Github] (https://github.com/emlec)
 * [INSERM UMR 1089] (http://umr1089.univ-nantes.fr/)
 """
 
@@ -19,6 +23,7 @@ try:
     import argparse  # Mandatory package
     import matplotlib  # Mandatory package
     import subprocess  # Required if depth file created using bedtools genomecov
+    import pathlib  # Mandatory package
 
     matplotlib.use('svg')  # Mandatory for the hardcopy backend
     import matplotlib.pyplot as plt  # Mandatory package
@@ -28,6 +33,7 @@ try:
     import configparser  # Mandatory package
     import pysam  # Mandatory package
     from Bio import SeqIO  # Mandatory package
+    import gzip  # Mandatory package
 
     # Local imports
     from Conf_file import write_conf_file  # if not imported = no creation of configuration file
@@ -126,6 +132,9 @@ class Main:
             self.reference_path = self.config.get("Ref", "ref_path")
             if self.reference_path:
                 self.reference()
+
+            if not '.gz' in pathlib.Path(self.reference_path).suffixes:
+                print("The reference must be in fa.gz format.")
 
             # Parse [Bam] section
             for i in range(1, 10):
@@ -329,7 +338,8 @@ class Main:
         """
         Recover the name and the length of the reference.
         """
-        with open(self.reference_path) as f:
+
+        with gzip.open(self.reference_path) as f:
             for ref in SeqIO.parse(f, "fasta"):
                 self.reference_name = ref.id
                 self.reference_length = len(ref.seq)
