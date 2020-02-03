@@ -396,20 +396,19 @@ class Main:
                     # pileupcolumn.pos + 1 == base position in the reference
                     pos_prec = -1
                     for pileupcolumn in bam.pileup(self.reference_name, max_depth=self.max_depth_pysam):
-                        base_position = pileupcolumn.pos + 1
                         # Write the missing positions since pileup do not report uncovered regions
                         if pileupcolumn.pos != pos_prec + 1:
                             # Note: i is a 0-based coordinate
                             for i in range(pos_prec + 1, pileupcolumn.pos):
-                                depth_temp_file.write(f"{self.reference_name}\t{i}\t{0}\n")
+                                depth_temp_file.write(f"{self.reference_name}\t{i - 1}\t{0}\n")
                         # Then, write the current position
                         depth_temp_file.write(
-                            f"{self.reference_name}\t{base_position}\t{pileupcolumn.n}\n")
+                            f"{self.reference_name}\t{pileupcolumn.pos}\t{pileupcolumn.n}\n")
                         pos_prec = pileupcolumn.pos
                         # Write the last entries for the sequence if needed
                     if pos_prec + 1 < self.reference_length:
                         for i in range(pos_prec + 1, self.reference_length - 1):
-                            depth_temp_file.write(f"{self.reference_name}\t{i}\t{0}\n")
+                            depth_temp_file.write(f"{self.reference_name}\t{i - 1}\t{0}\n")
 
         # Mofify the depth file including a column with 1-based coordinates and adding 0-depth if necessary (bedtools output)
         with open("depth.temp", "r") as depth_temp_file:
