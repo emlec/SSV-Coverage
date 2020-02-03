@@ -3,27 +3,43 @@
 **Coverage graph creator from BAM files.** 
 
 ## Motivation
-SSV-Coverage is a **python 3** script developed to create coverage graph from BAM files containing read alignments. 
+SSV-Coverage is a **python 3** script developed to create coverage graph from BAM files containing read alignments.
+
+Depth can be performed using bedtools genomecov or pysam. 
+
+The coverages can be normalized to represent samples with very distant sequencing depths. 
+
 
 ## Principle
 
  1. A configuration file containing all program parameters is parsed and verified.
- 2. BAM files are used to determine the depth of coverage at each position in the sequence. This depth is written in a BED file.
- 3. The depth of coverage is then normalized by dividing the depth at each position by the total number of sequenced bases along the sequence.
+ 2. BAM files are used to determine the depth of coverage at each position in the sequence, using bedtools genomecov or pysam. 
+    This depth is written in a depth file.
+ 3. The depth of coverage can be normalized by dividing the depth at each position by the total number of sequenced bases along the sequence.
  4. The graph of coverage is created.
 
 Only a part of the sequence can be represented in the graph.
 
+## Pre-requisites
+
+1. From the BAM file, reads must be aligned against only one sequence. 
+2. Sequence must be in .fa.gz format.
+
 ## Dependencies
 
-The following dependencie is required for proper program execution:
+The following dependencies are required for proper program execution:
 * matplotlib
+* bedtools and/or pysam
+* Bio.SeqIO
+
+Standard library imports:
+sys, os, argparse, subprocess, pathlib, time, gzip, datetime, configparser
 
 ## Get SSV-Coverage
 
 Clone the repository 
 ``` bash
-$ git clone https://github.com/emlec/SSV-Coverage.git my_folder/
+$ git clone https://github.com/emlec/SSV-Coverage.git
 ```
 
 ## Usage
@@ -31,11 +47,13 @@ $ git clone https://github.com/emlec/SSV-Coverage.git my_folder/
 Prepare the configuration file including files and settings as indicated in the template Conf.txt.
 
 ```
-Usage: SSV-Coverage.py -c Conf.txt [-i -h]
+usage: SSV-Coverage.py -c Conf.txt [-i -h]
 
-Options:
-  --version      show program's version number and exit
+Coverage graph creator from BAM files.
+
+optional arguments:
   -h, --help     show this help message and exit
+  --version      show program's version number and exit
   -i BAM_NUMBER  Generate an empty configuration file adapted to the number of
                  bam files to create coverage graph and exit. [Mandatory]
   -c CONF_FILE   Path to the configuration file [Mandatory]
@@ -53,7 +71,7 @@ SSV-Coverage.py -c example_conf_file.txt
 The expected results are presents in the folder expected_results.
 
 
-## Autors and Contacts
+## Authors and Contacts
 
 * Emilie Lecomte <emilie.lecomte@univ-nantes.fr> @emlec
 * Mathieu Bolteau <mathieu.bolteau1@gmail.com> @mablt

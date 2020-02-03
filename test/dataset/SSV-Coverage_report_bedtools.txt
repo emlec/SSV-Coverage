@@ -1,0 +1,11 @@
+
+====== SSV-Coverage.py 0.1.0 ======
+
+2020-02-03 17:24:09
+
+=== Configuration File Name ===
+	example_conf_file_bedtools.txt
+
+=== Created Files ===
+	./sample1_bedtools.depth
+	out_bedtools.svg

@@ -1,12 +1,11 @@
 
 ====== SSV-Coverage.py 0.1.0 ======
 
-2018-06-07 14:09:32
+2020-02-03 17:24:18
 
 === Configuration File Name ===
-	conf.txt
+	example_conf_file_pysam.txt
 
 === Created Files ===
-	./sample1.bam.bai
-	./sample1.bed
-	out.svg
+	./sample1_pysam.depth
+	out_pysam.svg
