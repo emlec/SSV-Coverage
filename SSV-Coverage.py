@@ -425,6 +425,11 @@ class Main:
                         current_position = current_position + 1
                     if columns[1] == str(current_position):
                         if current_position < self.reference_length:
+                            # Convert the type of the depth number from string to float with 0 digit, because of exponential number incompatibility
+                            # that can be present in the bedtools output
+                            columns[2] = f'{float(columns[2]):.0f}'
+                            # Convert the type of the depth number from float to string in order to include the line return
+                            columns[2] = str(columns[2])+"\n"
                             columns.insert(2, str(current_position + 1))
                             depth_file.write("\t".join(columns))
                             current_position = current_position + 1
