@@ -99,97 +99,97 @@ line_color :
 line_width : 
 
 """
-                + bam_to_add +
-                """
-                ##################
-                #   DEPTH FILES    #
-                ################## 
-                
-                [Depth]
-                
-                #   Depth files can be created from BAM files using bedtools genomecov (bedtools) or pysam. 
-                #   Write either 'bedtools' or 'pysam'. 
-                #   For pysam, indicate the maximum read depth permitted, 100000000 by default. (Int)
-                #   If leaved blank, bedtools genomecov will be used by default. (String) 
-                
-                depth_program : 
-                max_depth_pysam : 
-                
-                
-                #####################
-                #   GRAPH OPTIONS   #
-                #####################
-                
-                #   This section contains the options for the graphic design. 
-                #   If necessary, a zoom can be made. Only one graphic can be created.
-                
-                [Graph]
-                
-                #   Title of the graphic. 
-                #   If leaved blank, 'Coverage along the reference [Name of reference]' will be used by default. (String)
-                title : 
-                
-                #   Width of the graphic window. If leaved blank, '6' will be used by default. (Int)   
-                width : 
-                
-                #   Length of the graphic window. If leaved blank, '8' will be used by default. (Int)
-                length : 
-                
-                #   Representation of the sequencing coverage after normalization by the total number of sequenced bases.
-                #   Write 'True' if normalization is required, otherwise 'False'. 
-                #   If leaved blank, the sequencing coverage will be normalized by default. (Boolean)
-                
-                depth_normalization: 
-                
-                #   Scale of the graphic. Scale can be 'log' or 'linear'. 
-                #   If leaved blank, 'linear' will be used by default. (String)
-                scale : 
-                
-                #   x-axis name. If leaved blank, 'Position' will be used by default. (String)
-                xlabel : 
-                
-                #   y-axis name. If leaved blank, 'Normalized coverage of sequencing per base' will be used by default. (String)
-                ylabel :
-                
-                
-                
-                [Zoom]
-                
-                #   The zoom concern the x-axis. It is possible to visualize only a region of the DNA sequence.
-                
-                #   Write either 'True' or 'False' to visualize or not only a region of the DNA sequence.
-                #   If False, the following options of the section won't be parsed. (Boolean) 
-                
-                zoom : False
-                
-                #   Starting position of the region. (Int)
-                min_position : 
-                
-                #   Ending position of the region. (Int)
-                max_position : 
-                
-                ######################
-                #   OUTPUT OPTIONS   #
-                ######################
-                
-                #   By default, a svg file containing the graphic is record in the current folder. 
-                #   It is possible to create a supplementary out file in addition of the svg.
-                
-                [Output]
-                
-                #   Name of the output file. If leaved blank, 'out' will be used by default. (String)
-                output_name : 
-                
-                [SupplementaryOutput]
-                
-                #   Convert the svg file to another format (optional). 
-                
-                #   Write either 'True' or 'False' to create or not a supplementary output file. 
-                #   If False, the following options of the section won't be parsed. (Boolean)
-                supplementary_output: 
-                
-                #   Name of the supplementary output file. If leaved blank 'out' will be used by default. (String)
-                supplementary_output_prefix :
-                
-                #   Available format of the supplementary output file: 'png', 'pdf', 'tif', 'ps', 'eps'. (String)
-                supplementary_output_format : """)
++ bam_to_add +
+"""
+##################
+#   DEPTH FILES    #
+################## 
+
+[Depth]
+
+#   Depth files can be created from BAM files using bedtools genomecov (bedtools) or pysam. 
+#   Write either 'bedtools' or 'pysam'. 
+#   For pysam, indicate the maximum read depth permitted, 100000000 by default. (Int)
+#   If leaved blank, bedtools genomecov will be used by default. (String) 
+
+depth_program : 
+max_depth_pysam : 
+
+
+#####################
+#   GRAPH OPTIONS   #
+#####################
+
+#   This section contains the options for the graphic design. 
+#   If necessary, a zoom can be made. Only one graphic can be created.
+
+[Graph]
+
+#   Title of the graphic. 
+#   If leaved blank, 'Coverage along the reference [Name of reference]' will be used by default. (String)
+title : 
+
+#   Width of the graphic window. If leaved blank, '6' will be used by default. (Int)   
+width : 
+
+#   Length of the graphic window. If leaved blank, '8' will be used by default. (Int)
+length : 
+
+#   Representation of the sequencing coverage after normalization by the total number of sequenced bases.
+#   Write 'True' if normalization is required, otherwise 'False'. 
+#   If leaved blank, the sequencing coverage will be normalized by default. (Boolean)
+
+depth_normalization: 
+
+#   Scale of the graphic. Scale can be 'log' or 'linear'. 
+#   If leaved blank, 'linear' will be used by default. (String)
+scale : 
+
+#   x-axis name. If leaved blank, 'Position' will be used by default. (String)
+xlabel : 
+
+#   y-axis name. If leaved blank, 'Normalized coverage of sequencing per base' will be used by default. (String)
+ylabel :
+
+
+
+[Zoom]
+
+#   The zoom concern the x-axis. It is possible to visualize only a region of the DNA sequence.
+
+#   Write either 'True' or 'False' to visualize or not only a region of the DNA sequence.
+#   If False, the following options of the section won't be parsed. (Boolean) 
+
+zoom : False
+
+#   Starting position of the region. (Int)
+min_position : 
+
+#   Ending position of the region. (Int)
+max_position : 
+
+######################
+#   OUTPUT OPTIONS   #
+######################
+
+#   By default, a svg file containing the graphic is record in the current folder. 
+#   It is possible to create a supplementary out file in addition of the svg.
+
+[Output]
+
+#   Name of the output file. If leaved blank, 'out' will be used by default. (String)
+output_name : 
+
+[SupplementaryOutput]
+
+#   Convert the svg file to another format (optional). 
+
+#   Write either 'True' or 'False' to create or not a supplementary output file. 
+#   If False, the following options of the section won't be parsed. (Boolean)
+supplementary_output: 
+
+#   Name of the supplementary output file. If leaved blank 'out' will be used by default. (String)
+supplementary_output_prefix :
+
+#   Available format of the supplementary output file: 'png', 'pdf', 'tif', 'ps', 'eps'. (String)
+supplementary_output_format : """)
