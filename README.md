@@ -30,7 +30,7 @@ Only a part of the sequence can be represented in the graph.
 The following dependencies are required for proper program execution:
 * matplotlib
 * bedtools and/or pysam
-* Bio.SeqIO
+* biopython
 
 Standard library imports:
 sys, os, argparse, subprocess, pathlib, time, gzip, datetime, configparser
